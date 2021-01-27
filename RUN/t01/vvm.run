@@ -1,0 +1,66 @@
+#!/bin/csh
+# Script which compiles and calls the Fortran executable and 
+# runs the simulation.
+# This script is called by the batch script "btch_vvcm_cam".
+#-------------------------------------------------------------------  
+
+# The compilation to the gnumakefile system and will only
+#  compile if code has been updated. If you are changing
+#  compilation options 'make clobber' first.
+# The format is make, compiler_option=true (if platform has more than
+#  one compiler available) DEBUG=logical_value (default is false and
+#  can be omitted if default is desired).
+# Example: make INTEL=true DEBUG=true
+
+set echo  # echoes the commands
+set expname = gate_test
+set subdir = ../../DATA/${expname}
+set datadir = ../../RUNDATA
+set codedir = CODE
+
+make INTEL_COMP=true CASENAME=${expname} CODEDIR=${codedir} -f ../makefile -j4
+
+#for restart ----------------------------------------
+# setenv EXPHDR_INI1 ${subdir}"/GPTB02"
+# setenv EXPHDR_INI2 ${subdir}"/GPTE01"
+# For restart ----------------------------------------
+#-------------------------------------------------------------------
+
+cp vvm.setup ${subdir}
+
+cd ${subdir}
+
+mkdir compile_code
+mv *.f compile_code
+
+set file = ../../RUN/t01/PARMSLD.f
+
+set nx = `grep "nsbdm_x = " ${file} |sed 's/, .*$//g' |sed 's/^.*nsbdm_x = //g'`
+set ny = `grep "nsbdm_y = " ${file} |sed 's/, .*$//g' |sed 's/^.*nsbdm_y = //g'`
+@ ntask = $nx * $ny
+@ pth = 12
+@ ppn = $ntask % $pth
+
+while ( $ppn != 0 || $pth  == 0)
+@ pth --
+@ ppn = $ntask % $pth
+end
+@ ppn = $ntask / $pth
+
+if ( $pth < 4 || $ppn >= 36) then
+echo 'bad cores.'
+exit
+endif
+set outname = `echo $expname | awk '{print substr($0,1,3)}'`
+
+sed -e 's/expname.out/'${outname}'.out/g' \
+    -e 's/expname.err/'${outname}'.err/g' \
+    -e 's/expname/'${expname}'/g' \
+    -e 's/np_nodes/1/g' \
+    -e 's/np_threads/4/g' \
+    -e 's/total_cores/4/g' ../../RUN/run.sh > run.sh
+
+qsub run.sh
+
+exit
+
