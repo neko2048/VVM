@@ -1,11 +1,11 @@
-# 1 "../../DATA/gate_test/PARMSLD.f90"
+# 1 "../../DATA/bubble/PARMSLD.f90"
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 # 1 "<command-line>" 2
-# 1 "../../DATA/gate_test/PARMSLD.f90"
-# 1 "../../DATA/gate_test/definesld.com" 1
-# 2 "../../DATA/gate_test/PARMSLD.f90" 2
+# 1 "../../DATA/bubble/PARMSLD.f90"
+# 1 "../../DATA/bubble/definesld.com" 1
+# 2 "../../DATA/bubble/PARMSLD.f90" 2
 !*****************************
 
 MODULE PARMSLD
@@ -50,7 +50,7 @@ PRIVATE
     INTEGER (KIND=int_kind), PARAMETER, PUBLIC :: &
         mi1 = (mi_glob - 1) / nsbdm_x + 1, & ! zonal dimension of subdomain
         mj1 = (mj_glob - 1) / nsbdm_y + 1 ! meridional dimension of subdomain
-# 55 "../../DATA/gate_test/PARMSLD.f90"
+# 55 "../../DATA/bubble/PARMSLD.f90"
     ! define total horizontal extent based on halo size
     INTEGER(KIND=int_kind),PARAMETER, PUBLIC :: &
         mim = 1 - nhalo, & ! starting zonal index

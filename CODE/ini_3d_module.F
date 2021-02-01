@@ -408,6 +408,16 @@ CONTAINS
       DO 500 J = mjm,mjp
       DO 500 I = mim,mip
       TH3D(I,J,K) = THBAR(K)
+!============================= bubble
+      IF (sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16.) ** 2 &
+        +((real(K)-7.)/6.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16.) ** 2) <= 1) THEN
+        TH3D(I, J, K) = TH3D(I, J, K) + 5. * 0.5 * &
+        (cos(3.1415926 * sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16.) ** 2 &
+        +((real(K)-7.)/6.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16.) ** 2)) + 1.)
+      ENDIF
+! MJ1*nj_sbdm+J: position in y, mj_glob: domain length in y
+! (real(K) -10)
+!=============================
       QV3D(I,J,K) = QVBAR(K)
       QC3D(I,J,K) = 0.
       QI3D(I,J,K) = 0.
@@ -415,7 +425,6 @@ CONTAINS
       QS3D(I,J,K) = 0.
       QG3D(I,J,K) = 0.
   500 CONTINUE
-
       ENDIF
 !ccwu 
       DO 515 K = 1, NK2
