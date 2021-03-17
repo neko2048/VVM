@@ -5,7 +5,7 @@
 #--------------------------------------------------------------------- 
 
 set echo  # echoes the commands
-set expname = bubble
+set expname = walter
 
 # hardscrabble configuration
 set subdir = '../..'
