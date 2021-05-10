@@ -1,11 +1,11 @@
-# 1 "../../DATA/walter_small/PARMSLD.f90"
+# 1 "../../DATA/hi_reso_5K/PARMSLD.f90"
 # 1 "<built-in>"
 # 1 "<command-line>"
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 # 1 "<command-line>" 2
-# 1 "../../DATA/walter_small/PARMSLD.f90"
-# 1 "../../DATA/walter_small/definesld.com" 1
-# 2 "../../DATA/walter_small/PARMSLD.f90" 2
+# 1 "../../DATA/hi_reso_5K/PARMSLD.f90"
+# 1 "../../DATA/hi_reso_5K/definesld.com" 1
+# 2 "../../DATA/hi_reso_5K/PARMSLD.f90" 2
 !*****************************
 
 MODULE PARMSLD
@@ -29,7 +29,7 @@ PRIVATE
     INTEGER(KIND=int_kind),PARAMETER, PUBLIC :: &
         MI_glob = 128, & ! the zonal domain size (no halo points)
         MJ_glob = 128, & ! the meridional domain size (no halo points)
-        NK2 = 45 , & ! the vertical domain size
+        NK2 = 80 , & ! the vertical domain size
         ntracer = 0 ! the number of passive tracers
 
     ! Define the depth of the halo region, later will preprocess depending on operator order
@@ -50,7 +50,7 @@ PRIVATE
     INTEGER (KIND=int_kind), PARAMETER, PUBLIC :: &
         mi1 = (mi_glob - 1) / nsbdm_x + 1, & ! zonal dimension of subdomain
         mj1 = (mj_glob - 1) / nsbdm_y + 1 ! meridional dimension of subdomain
-# 55 "../../DATA/walter_small/PARMSLD.f90"
+# 55 "../../DATA/hi_reso_5K/PARMSLD.f90"
     ! define total horizontal extent based on halo size
     INTEGER(KIND=int_kind),PARAMETER, PUBLIC :: &
         mim = 1 - nhalo, & ! starting zonal index

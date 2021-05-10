@@ -1,0 +1,964 @@
+diff --git a/CODE/ini_3d_module.F b/CODE/ini_3d_module.F
+index a4c0e05..87c2302 100644
+--- a/CODE/ini_3d_module.F
++++ b/CODE/ini_3d_module.F
+@@ -409,22 +409,22 @@ CONTAINS
+       DO 500 I = mim,mip
+       TH3D(I,J,K) = THBAR(K)
+ !============================= bubble
+-      IF (sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 8) ** 2 &
+-        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 8) ** 2) <= 1) THEN
+-        TH3D(I, J, K) = TH3D(I, J, K) + 1. * 0.5 * &
+-        (cos(3.1415926 * sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 8) ** 2 &
+-        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 8) ** 2)) + 1.)
++      IF (sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16) ** 2 &
++        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16) ** 2) <= 1) THEN
++        TH3D(I, J, K) = TH3D(I, J, K) + 3. * 0.5 * &
++        (cos(3.1415926 * sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16) ** 2 &
++        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16) ** 2)) + 1.)
+       ENDIF
+ ! MJ1*nj_sbdm+J: position in y, mj_glob: domain length in y
+ ! (real(K) -10)
+ !=============================
+       QV3D(I,J,K) = QVBAR(K)
+ !============================= bubble
+-      IF (sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 8) ** 2 &
+-        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 8) ** 2) <= 1) THEN
++      IF (sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16) ** 2 &
++        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16) ** 2) <= 1) THEN
+         QV3D(I, J, K) = QV3D(I, J, K) + 0.002 * 0.5 * &
+-        (cos(3.1415926 * sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 8) ** 2 &
+-        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 8) ** 2)) + 1.)
++        (cos(3.1415926 * sqrt(((real(MJ1*nj_sbdm+J)-mj_glob/2) / 16) ** 2 &
++        +((real(K)-3.5)/8.) ** 2 + ((real(MI1*ni_sbdm+I)-mi_glob/2) / 16) ** 2)) + 1.)
+       ENDIF
+ ! MJ1*nj_sbdm+J: position in y, mj_glob: domain length in y
+ ! (real(K) -10)
+diff --git a/RUN/t01/CLDINFO.o b/RUN/t01/CLDINFO.o
+index 400c98b..e6609e0 100644
+Binary files a/RUN/t01/CLDINFO.o and b/RUN/t01/CLDINFO.o differ
+diff --git a/RUN/t01/CONST3D.o b/RUN/t01/CONST3D.o
+index 2f68ac7..a81608b 100644
+Binary files a/RUN/t01/CONST3D.o and b/RUN/t01/CONST3D.o differ
+diff --git a/RUN/t01/CONSTLD.o b/RUN/t01/CONSTLD.o
+index 6223e0a..8eea049 100644
+Binary files a/RUN/t01/CONSTLD.o and b/RUN/t01/CONSTLD.o differ
+diff --git a/RUN/t01/PARMSLD.f b/RUN/t01/PARMSLD.f
+index caabc92..d0582b3 100644
+--- a/RUN/t01/PARMSLD.f
++++ b/RUN/t01/PARMSLD.f
+@@ -1,11 +1,11 @@
+-# 1 "../../DATA/walter_small/PARMSLD.f90"
++# 1 "../../DATA/hi_reso_5K/PARMSLD.f90"
+ # 1 "<built-in>"
+ # 1 "<command-line>"
+ # 1 "/usr/include/stdc-predef.h" 1 3 4
+ # 1 "<command-line>" 2
+-# 1 "../../DATA/walter_small/PARMSLD.f90"
+-# 1 "../../DATA/walter_small/definesld.com" 1
+-# 2 "../../DATA/walter_small/PARMSLD.f90" 2
++# 1 "../../DATA/hi_reso_5K/PARMSLD.f90"
++# 1 "../../DATA/hi_reso_5K/definesld.com" 1
++# 2 "../../DATA/hi_reso_5K/PARMSLD.f90" 2
+ !*****************************
+ 
+ MODULE PARMSLD
+@@ -29,7 +29,7 @@ PRIVATE
+     INTEGER(KIND=int_kind),PARAMETER, PUBLIC :: &
+         MI_glob = 128, & ! the zonal domain size (no halo points)
+         MJ_glob = 128, & ! the meridional domain size (no halo points)
+-        NK2 = 45 , & ! the vertical domain size
++        NK2 = 80 , & ! the vertical domain size
+         ntracer = 0 ! the number of passive tracers
+ 
+     ! Define the depth of the halo region, later will preprocess depending on operator order
+@@ -50,7 +50,7 @@ PRIVATE
+     INTEGER (KIND=int_kind), PARAMETER, PUBLIC :: &
+         mi1 = (mi_glob - 1) / nsbdm_x + 1, & ! zonal dimension of subdomain
+         mj1 = (mj_glob - 1) / nsbdm_y + 1 ! meridional dimension of subdomain
+-# 55 "../../DATA/walter_small/PARMSLD.f90"
++# 55 "../../DATA/hi_reso_5K/PARMSLD.f90"
+     ! define total horizontal extent based on halo size
+     INTEGER(KIND=int_kind),PARAMETER, PUBLIC :: &
+         mim = 1 - nhalo, & ! starting zonal index
+diff --git a/RUN/t01/PARMSLD.o b/RUN/t01/PARMSLD.o
+index 97e1466..43f533c 100644
+Binary files a/RUN/t01/PARMSLD.o and b/RUN/t01/PARMSLD.o differ
+diff --git a/RUN/t01/PROFOUTLD.o b/RUN/t01/PROFOUTLD.o
+index eccd5ba..6170629 100644
+Binary files a/RUN/t01/PROFOUTLD.o and b/RUN/t01/PROFOUTLD.o differ
+diff --git a/RUN/t01/RADOUTLD.o b/RUN/t01/RADOUTLD.o
+index 317086a..da7bf1f 100644
+Binary files a/RUN/t01/RADOUTLD.o and b/RUN/t01/RADOUTLD.o differ
+diff --git a/RUN/t01/TIMEINFO.o b/RUN/t01/TIMEINFO.o
+index 5f20cc7..f779452 100644
+Binary files a/RUN/t01/TIMEINFO.o and b/RUN/t01/TIMEINFO.o differ
+diff --git a/RUN/t01/TIMEINTERP.o b/RUN/t01/TIMEINTERP.o
+index 1029e3a..b622784 100644
+Binary files a/RUN/t01/TIMEINTERP.o and b/RUN/t01/TIMEINTERP.o differ
+diff --git a/RUN/t01/ab_3d_module.mod b/RUN/t01/ab_3d_module.mod
+index 9dbcc6d..25003e6 100644
+Binary files a/RUN/t01/ab_3d_module.mod and b/RUN/t01/ab_3d_module.mod differ
+diff --git a/RUN/t01/ab_3d_module.o b/RUN/t01/ab_3d_module.o
+index 0e7d87f..dd2d33a 100644
+Binary files a/RUN/t01/ab_3d_module.o and b/RUN/t01/ab_3d_module.o differ
+diff --git a/RUN/t01/advec_3d_module.mod b/RUN/t01/advec_3d_module.mod
+index 4a8f22d..8b28aa4 100644
+Binary files a/RUN/t01/advec_3d_module.mod and b/RUN/t01/advec_3d_module.mod differ
+diff --git a/RUN/t01/advec_3d_module.o b/RUN/t01/advec_3d_module.o
+index bcf32ab..cc1ffc7 100644
+Binary files a/RUN/t01/advec_3d_module.o and b/RUN/t01/advec_3d_module.o differ
+diff --git a/RUN/t01/basic_state_parameters.mod b/RUN/t01/basic_state_parameters.mod
+index d02a678..b286d2c 100644
+Binary files a/RUN/t01/basic_state_parameters.mod and b/RUN/t01/basic_state_parameters.mod differ
+diff --git a/RUN/t01/bound.mod b/RUN/t01/bound.mod
+index e5b103f..8d89824 100644
+Binary files a/RUN/t01/bound.mod and b/RUN/t01/bound.mod differ
+diff --git a/RUN/t01/bound.o b/RUN/t01/bound.o
+index cc03887..0396006 100644
+Binary files a/RUN/t01/bound.o and b/RUN/t01/bound.o differ
+diff --git a/RUN/t01/buoyf_module.mod b/RUN/t01/buoyf_module.mod
+index 3ba073a..95d7e17 100644
+Binary files a/RUN/t01/buoyf_module.mod and b/RUN/t01/buoyf_module.mod differ
+diff --git a/RUN/t01/buoyf_module.o b/RUN/t01/buoyf_module.o
+index b26c6af..0e9b325 100644
+Binary files a/RUN/t01/buoyf_module.o and b/RUN/t01/buoyf_module.o differ
+diff --git a/RUN/t01/cam_rad_parameterizations.mod b/RUN/t01/cam_rad_parameterizations.mod
+index 11fb13d..03b7660 100644
+Binary files a/RUN/t01/cam_rad_parameterizations.mod and b/RUN/t01/cam_rad_parameterizations.mod differ
+diff --git a/RUN/t01/cam_rad_parameterizations.o b/RUN/t01/cam_rad_parameterizations.o
+index cfc4d6d..8fdea78 100644
+Binary files a/RUN/t01/cam_rad_parameterizations.o and b/RUN/t01/cam_rad_parameterizations.o differ
+diff --git a/RUN/t01/cldefrint.o b/RUN/t01/cldefrint.o
+index 34a26af..8a00cb3 100644
+Binary files a/RUN/t01/cldefrint.o and b/RUN/t01/cldefrint.o differ
+diff --git a/RUN/t01/cldinfo.mod b/RUN/t01/cldinfo.mod
+index 087e313..b7bc2d8 100644
+Binary files a/RUN/t01/cldinfo.mod and b/RUN/t01/cldinfo.mod differ
+diff --git a/RUN/t01/cloud_module.mod b/RUN/t01/cloud_module.mod
+index 4e8a194..7ee2723 100644
+Binary files a/RUN/t01/cloud_module.mod and b/RUN/t01/cloud_module.mod differ
+diff --git a/RUN/t01/cloud_module.o b/RUN/t01/cloud_module.o
+index 244512a..b9f06e4 100644
+Binary files a/RUN/t01/cloud_module.o and b/RUN/t01/cloud_module.o differ
+diff --git a/RUN/t01/const3d.mod b/RUN/t01/const3d.mod
+index 3dc3d02..5fe0d9f 100644
+Binary files a/RUN/t01/const3d.mod and b/RUN/t01/const3d.mod differ
+diff --git a/RUN/t01/constld.mod b/RUN/t01/constld.mod
+index 9ead913..59949b0 100644
+Binary files a/RUN/t01/constld.mod and b/RUN/t01/constld.mod differ
+diff --git a/RUN/t01/damping.mod b/RUN/t01/damping.mod
+index e674025..d6f7494 100644
+Binary files a/RUN/t01/damping.mod and b/RUN/t01/damping.mod differ
+diff --git a/RUN/t01/damping.o b/RUN/t01/damping.o
+index c991f68..f42c9cb 100644
+Binary files a/RUN/t01/damping.o and b/RUN/t01/damping.o differ
+diff --git a/RUN/t01/domain_decomposition.mod b/RUN/t01/domain_decomposition.mod
+index c1f2b34..f2b405b 100644
+Binary files a/RUN/t01/domain_decomposition.mod and b/RUN/t01/domain_decomposition.mod differ
+diff --git a/RUN/t01/domain_decomposition.o b/RUN/t01/domain_decomposition.o
+index 51d3f71..15ceb2a 100644
+Binary files a/RUN/t01/domain_decomposition.o and b/RUN/t01/domain_decomposition.o differ
+diff --git a/RUN/t01/elliptic.mod b/RUN/t01/elliptic.mod
+index 800f296..2f0e35f 100644
+Binary files a/RUN/t01/elliptic.mod and b/RUN/t01/elliptic.mod differ
+diff --git a/RUN/t01/elliptic.o b/RUN/t01/elliptic.o
+index 64dc068..83d1611 100644
+Binary files a/RUN/t01/elliptic.o and b/RUN/t01/elliptic.o differ
+diff --git a/RUN/t01/force_3d_module.mod b/RUN/t01/force_3d_module.mod
+index 980cd4c..de35f01 100644
+Binary files a/RUN/t01/force_3d_module.mod and b/RUN/t01/force_3d_module.mod differ
+diff --git a/RUN/t01/force_3d_module.o b/RUN/t01/force_3d_module.o
+index 037aecd..4b6621e 100644
+Binary files a/RUN/t01/force_3d_module.o and b/RUN/t01/force_3d_module.o differ
+diff --git a/RUN/t01/gather_scatter.mod b/RUN/t01/gather_scatter.mod
+index 59e553c..5d6beb4 100644
+Binary files a/RUN/t01/gather_scatter.mod and b/RUN/t01/gather_scatter.mod differ
+diff --git a/RUN/t01/gather_scatter.o b/RUN/t01/gather_scatter.o
+index d02d03f..c023393 100644
+Binary files a/RUN/t01/gather_scatter.o and b/RUN/t01/gather_scatter.o differ
+diff --git a/RUN/t01/general_parameters.mod b/RUN/t01/general_parameters.mod
+index 33c1383..f24e822 100644
+Binary files a/RUN/t01/general_parameters.mod and b/RUN/t01/general_parameters.mod differ
+diff --git a/RUN/t01/hwscrt.o b/RUN/t01/hwscrt.o
+index bb2269c..600853b 100644
+Binary files a/RUN/t01/hwscrt.o and b/RUN/t01/hwscrt.o differ
+diff --git a/RUN/t01/ini_3d_module.mod b/RUN/t01/ini_3d_module.mod
+index 739a365..8e03e0b 100644
+Binary files a/RUN/t01/ini_3d_module.mod and b/RUN/t01/ini_3d_module.mod differ
+diff --git a/RUN/t01/ini_3d_module.o b/RUN/t01/ini_3d_module.o
+index ea20d19..8961d68 100644
+Binary files a/RUN/t01/ini_3d_module.o and b/RUN/t01/ini_3d_module.o differ
+diff --git a/RUN/t01/kinds.mod b/RUN/t01/kinds.mod
+index c37410a..bcc34db 100644
+Binary files a/RUN/t01/kinds.mod and b/RUN/t01/kinds.mod differ
+diff --git a/RUN/t01/kwm_date_utilities.mod b/RUN/t01/kwm_date_utilities.mod
+index cde102a..66c1f19 100644
+Binary files a/RUN/t01/kwm_date_utilities.mod and b/RUN/t01/kwm_date_utilities.mod differ
+diff --git a/RUN/t01/kwm_date_utilities.o b/RUN/t01/kwm_date_utilities.o
+index af3e0c6..375572d 100644
+Binary files a/RUN/t01/kwm_date_utilities.o and b/RUN/t01/kwm_date_utilities.o differ
+diff --git a/RUN/t01/land_module.mod b/RUN/t01/land_module.mod
+index 08889df..3e5ba1d 100644
+Binary files a/RUN/t01/land_module.mod and b/RUN/t01/land_module.mod differ
+diff --git a/RUN/t01/land_module.o b/RUN/t01/land_module.o
+index abea3d9..0f8ed91 100644
+Binary files a/RUN/t01/land_module.o and b/RUN/t01/land_module.o differ
+diff --git a/RUN/t01/ldinput.mod b/RUN/t01/ldinput.mod
+index 58b184b..6f422da 100644
+Binary files a/RUN/t01/ldinput.mod and b/RUN/t01/ldinput.mod differ
+diff --git a/RUN/t01/ldinput.o b/RUN/t01/ldinput.o
+index a374404..d49a827 100644
+Binary files a/RUN/t01/ldinput.o and b/RUN/t01/ldinput.o differ
+diff --git a/RUN/t01/ldmain.o b/RUN/t01/ldmain.o
+index 376870a..9d4a2ce 100644
+Binary files a/RUN/t01/ldmain.o and b/RUN/t01/ldmain.o differ
+diff --git a/RUN/t01/ldoutput.mod b/RUN/t01/ldoutput.mod
+index 595889e..59d4f7e 100644
+Binary files a/RUN/t01/ldoutput.mod and b/RUN/t01/ldoutput.mod differ
+diff --git a/RUN/t01/ldoutput.o b/RUN/t01/ldoutput.o
+index c138738..d97a919 100644
+Binary files a/RUN/t01/ldoutput.o and b/RUN/t01/ldoutput.o differ
+diff --git a/RUN/t01/ldoutput_nc.mod b/RUN/t01/ldoutput_nc.mod
+index 2756896..ee60321 100644
+Binary files a/RUN/t01/ldoutput_nc.mod and b/RUN/t01/ldoutput_nc.mod differ
+diff --git a/RUN/t01/ldoutput_nc.o b/RUN/t01/ldoutput_nc.o
+index e7938d0..c10fa63 100644
+Binary files a/RUN/t01/ldoutput_nc.o and b/RUN/t01/ldoutput_nc.o differ
+diff --git a/RUN/t01/ldpois3d.o b/RUN/t01/ldpois3d.o
+index 9e67c05..874e33c 100644
+Binary files a/RUN/t01/ldpois3d.o and b/RUN/t01/ldpois3d.o differ
+diff --git a/RUN/t01/main_variables.mod b/RUN/t01/main_variables.mod
+index 4979620..2478f5b 100644
+Binary files a/RUN/t01/main_variables.mod and b/RUN/t01/main_variables.mod differ
+diff --git a/RUN/t01/make_profiles_module.mod b/RUN/t01/make_profiles_module.mod
+index ec9ba49..bcef492 100644
+Binary files a/RUN/t01/make_profiles_module.mod and b/RUN/t01/make_profiles_module.mod differ
+diff --git a/RUN/t01/make_profiles_module.o b/RUN/t01/make_profiles_module.o
+index ac94df3..2b54ad7 100644
+Binary files a/RUN/t01/make_profiles_module.o and b/RUN/t01/make_profiles_module.o differ
+diff --git a/RUN/t01/module_ascii_io.mod b/RUN/t01/module_ascii_io.mod
+index 4c5c5a7..43a760d 100644
+Binary files a/RUN/t01/module_ascii_io.mod and b/RUN/t01/module_ascii_io.mod differ
+diff --git a/RUN/t01/module_ascii_io.o b/RUN/t01/module_ascii_io.o
+index 84d29b9..2a3dd74 100644
+Binary files a/RUN/t01/module_ascii_io.o and b/RUN/t01/module_ascii_io.o differ
+diff --git a/RUN/t01/module_io.mod b/RUN/t01/module_io.mod
+index c107aa5..3860260 100644
+Binary files a/RUN/t01/module_io.mod and b/RUN/t01/module_io.mod differ
+diff --git a/RUN/t01/module_io.o b/RUN/t01/module_io.o
+index fb36d30..357972f 100644
+Binary files a/RUN/t01/module_io.o and b/RUN/t01/module_io.o differ
+diff --git a/RUN/t01/module_model_constants.mod b/RUN/t01/module_model_constants.mod
+index 3b27096..d2e79d9 100644
+Binary files a/RUN/t01/module_model_constants.mod and b/RUN/t01/module_model_constants.mod differ
+diff --git a/RUN/t01/module_model_constants.o b/RUN/t01/module_model_constants.o
+index 7493070..160988a 100644
+Binary files a/RUN/t01/module_model_constants.o and b/RUN/t01/module_model_constants.o differ
+diff --git a/RUN/t01/module_netcdf_io.mod b/RUN/t01/module_netcdf_io.mod
+index b070f60..d9b9420 100644
+Binary files a/RUN/t01/module_netcdf_io.mod and b/RUN/t01/module_netcdf_io.mod differ
+diff --git a/RUN/t01/module_netcdf_io.o b/RUN/t01/module_netcdf_io.o
+index fecdaae..08fffe0 100644
+Binary files a/RUN/t01/module_netcdf_io.o and b/RUN/t01/module_netcdf_io.o differ
+diff --git a/RUN/t01/module_noahlsm_utility.mod b/RUN/t01/module_noahlsm_utility.mod
+index 9c7a826..6c19049 100644
+Binary files a/RUN/t01/module_noahlsm_utility.mod and b/RUN/t01/module_noahlsm_utility.mod differ
+diff --git a/RUN/t01/module_noahlsm_utility.o b/RUN/t01/module_noahlsm_utility.o
+index ad5dd2d..cef7bda 100644
+Binary files a/RUN/t01/module_noahlsm_utility.o and b/RUN/t01/module_noahlsm_utility.o differ
+diff --git a/RUN/t01/module_sf_noahlsm.mod b/RUN/t01/module_sf_noahlsm.mod
+index da4e34c..f197226 100644
+Binary files a/RUN/t01/module_sf_noahlsm.mod and b/RUN/t01/module_sf_noahlsm.mod differ
+diff --git a/RUN/t01/module_sf_noahlsm.o b/RUN/t01/module_sf_noahlsm.o
+index 3eb056f..879042a 100644
+Binary files a/RUN/t01/module_sf_noahlsm.o and b/RUN/t01/module_sf_noahlsm.o differ
+diff --git a/RUN/t01/module_sf_noahlsm_glacial_only.mod b/RUN/t01/module_sf_noahlsm_glacial_only.mod
+index b67a9d9..8ead346 100644
+Binary files a/RUN/t01/module_sf_noahlsm_glacial_only.mod and b/RUN/t01/module_sf_noahlsm_glacial_only.mod differ
+diff --git a/RUN/t01/module_sf_noahlsm_glacial_only.o b/RUN/t01/module_sf_noahlsm_glacial_only.o
+index deb520b..a7dd62b 100644
+Binary files a/RUN/t01/module_sf_noahlsm_glacial_only.o and b/RUN/t01/module_sf_noahlsm_glacial_only.o differ
+diff --git a/RUN/t01/module_sfcdif_wrf.mod b/RUN/t01/module_sfcdif_wrf.mod
+index de93310..156c6b2 100644
+Binary files a/RUN/t01/module_sfcdif_wrf.mod and b/RUN/t01/module_sfcdif_wrf.mod differ
+diff --git a/RUN/t01/module_sfcdif_wrf.o b/RUN/t01/module_sfcdif_wrf.o
+index 881f1d6..2c3714c 100644
+Binary files a/RUN/t01/module_sfcdif_wrf.o and b/RUN/t01/module_sfcdif_wrf.o differ
+diff --git a/RUN/t01/module_simple_driver.mod b/RUN/t01/module_simple_driver.mod
+index d9c4aba..cd44573 100644
+Binary files a/RUN/t01/module_simple_driver.mod and b/RUN/t01/module_simple_driver.mod differ
+diff --git a/RUN/t01/module_simple_driver.o b/RUN/t01/module_simple_driver.o
+index 572f9a3..a51d9e0 100644
+Binary files a/RUN/t01/module_simple_driver.o and b/RUN/t01/module_simple_driver.o differ
+diff --git a/RUN/t01/nc2fortranBinary.o b/RUN/t01/nc2fortranBinary.o
+index 7e4148d..8052cdc 100644
+Binary files a/RUN/t01/nc2fortranBinary.o and b/RUN/t01/nc2fortranBinary.o differ
+diff --git a/RUN/t01/new_ldoutput_nc.mod b/RUN/t01/new_ldoutput_nc.mod
+index 4a183eb..8bfdca9 100644
+Binary files a/RUN/t01/new_ldoutput_nc.mod and b/RUN/t01/new_ldoutput_nc.mod differ
+diff --git a/RUN/t01/new_ldoutput_nc.o b/RUN/t01/new_ldoutput_nc.o
+index bd1e24a..2e0e163 100644
+Binary files a/RUN/t01/new_ldoutput_nc.o and b/RUN/t01/new_ldoutput_nc.o differ
+diff --git a/RUN/t01/new_output_nc.mod b/RUN/t01/new_output_nc.mod
+index 9f6b6a4..811d34a 100644
+Binary files a/RUN/t01/new_output_nc.mod and b/RUN/t01/new_output_nc.mod differ
+diff --git a/RUN/t01/new_output_nc.o b/RUN/t01/new_output_nc.o
+index 38a0b2d..17d674a 100644
+Binary files a/RUN/t01/new_output_nc.o and b/RUN/t01/new_output_nc.o differ
+diff --git a/RUN/t01/nudge_module.mod b/RUN/t01/nudge_module.mod
+index 3bca853..0fac431 100644
+Binary files a/RUN/t01/nudge_module.mod and b/RUN/t01/nudge_module.mod differ
+diff --git a/RUN/t01/nudge_module.o b/RUN/t01/nudge_module.o
+index b2f9557..850fb57 100644
+Binary files a/RUN/t01/nudge_module.o and b/RUN/t01/nudge_module.o differ
+diff --git a/RUN/t01/output_nc.mod b/RUN/t01/output_nc.mod
+index aa40230..ee5365f 100644
+Binary files a/RUN/t01/output_nc.mod and b/RUN/t01/output_nc.mod differ
+diff --git a/RUN/t01/output_nc.o b/RUN/t01/output_nc.o
+index 58062ac..2b2238a 100644
+Binary files a/RUN/t01/output_nc.o and b/RUN/t01/output_nc.o differ
+diff --git a/RUN/t01/parkind.mod b/RUN/t01/parkind.mod
+index dbbc66d..664e13e 100644
+Binary files a/RUN/t01/parkind.mod and b/RUN/t01/parkind.mod differ
+diff --git a/RUN/t01/parkind.o b/RUN/t01/parkind.o
+index 42d1426..fd17fb9 100644
+Binary files a/RUN/t01/parkind.o and b/RUN/t01/parkind.o differ
+diff --git a/RUN/t01/parmsld.mod b/RUN/t01/parmsld.mod
+index c62c1c4..a3847c6 100644
+Binary files a/RUN/t01/parmsld.mod and b/RUN/t01/parmsld.mod differ
+diff --git a/RUN/t01/parrrsw.mod b/RUN/t01/parrrsw.mod
+index 19c9685..5fcc432 100644
+Binary files a/RUN/t01/parrrsw.mod and b/RUN/t01/parrrsw.mod differ
+diff --git a/RUN/t01/parrrsw.o b/RUN/t01/parrrsw.o
+index 7f24fcb..cbc48c1 100644
+Binary files a/RUN/t01/parrrsw.o and b/RUN/t01/parrrsw.o differ
+diff --git a/RUN/t01/parrrtm.mod b/RUN/t01/parrrtm.mod
+index 60e9a20..3133539 100644
+Binary files a/RUN/t01/parrrtm.mod and b/RUN/t01/parrrtm.mod differ
+diff --git a/RUN/t01/parrrtm.o b/RUN/t01/parrrtm.o
+index 4a19e52..af0fa74 100644
+Binary files a/RUN/t01/parrrtm.o and b/RUN/t01/parrrtm.o differ
+diff --git a/RUN/t01/petsc_vvm_solver.mod b/RUN/t01/petsc_vvm_solver.mod
+index 96ee072..ea4e210 100644
+Binary files a/RUN/t01/petsc_vvm_solver.mod and b/RUN/t01/petsc_vvm_solver.mod differ
+diff --git a/RUN/t01/petsc_vvm_solver.o b/RUN/t01/petsc_vvm_solver.o
+index a69e820..8278eb9 100644
+Binary files a/RUN/t01/petsc_vvm_solver.o and b/RUN/t01/petsc_vvm_solver.o differ
+diff --git a/RUN/t01/physics_interface.o b/RUN/t01/physics_interface.o
+index 2e86538..8e174b8 100644
+Binary files a/RUN/t01/physics_interface.o and b/RUN/t01/physics_interface.o differ
+diff --git a/RUN/t01/physics_parameters.mod b/RUN/t01/physics_parameters.mod
+index e429a36..1e9e232 100644
+Binary files a/RUN/t01/physics_parameters.mod and b/RUN/t01/physics_parameters.mod differ
+diff --git a/RUN/t01/physics_tendencies.mod b/RUN/t01/physics_tendencies.mod
+index 4a1827f..f44d111 100644
+Binary files a/RUN/t01/physics_tendencies.mod and b/RUN/t01/physics_tendencies.mod differ
+diff --git a/RUN/t01/physics_v10d.o b/RUN/t01/physics_v10d.o
+index e71820f..83132eb 100644
+Binary files a/RUN/t01/physics_v10d.o and b/RUN/t01/physics_v10d.o differ
+diff --git a/RUN/t01/profoutld.mod b/RUN/t01/profoutld.mod
+index 901887b..4abeba9 100644
+Binary files a/RUN/t01/profoutld.mod and b/RUN/t01/profoutld.mod differ
+diff --git a/RUN/t01/q_chk_module.mod b/RUN/t01/q_chk_module.mod
+index cdc5cb0..2531fde 100644
+Binary files a/RUN/t01/q_chk_module.mod and b/RUN/t01/q_chk_module.mod differ
+diff --git a/RUN/t01/q_chk_module.o b/RUN/t01/q_chk_module.o
+index 6d78744..57feeea 100644
+Binary files a/RUN/t01/q_chk_module.o and b/RUN/t01/q_chk_module.o differ
+diff --git a/RUN/t01/rad.mod b/RUN/t01/rad.mod
+index bdc3b9d..ffbf7de 100644
+Binary files a/RUN/t01/rad.mod and b/RUN/t01/rad.mod differ
+diff --git a/RUN/t01/rad.o b/RUN/t01/rad.o
+index ae1be3b..fb9b34f 100644
+Binary files a/RUN/t01/rad.o and b/RUN/t01/rad.o differ
+diff --git a/RUN/t01/rad_driver.mod b/RUN/t01/rad_driver.mod
+index 7aa01c7..b8954ba 100644
+Binary files a/RUN/t01/rad_driver.mod and b/RUN/t01/rad_driver.mod differ
+diff --git a/RUN/t01/rad_driver.o b/RUN/t01/rad_driver.o
+index 0bb5441..c5bfa69 100644
+Binary files a/RUN/t01/rad_driver.o and b/RUN/t01/rad_driver.o differ
+diff --git a/RUN/t01/rad_error.o b/RUN/t01/rad_error.o
+index 9136daa..b4323e2 100644
+Binary files a/RUN/t01/rad_error.o and b/RUN/t01/rad_error.o differ
+diff --git a/RUN/t01/rad_full.o b/RUN/t01/rad_full.o
+index 1fbdd6c..9aef81d 100644
+Binary files a/RUN/t01/rad_full.o and b/RUN/t01/rad_full.o differ
+diff --git a/RUN/t01/radiation_rrtmg.o b/RUN/t01/radiation_rrtmg.o
+index 70c16b6..db15421 100644
+Binary files a/RUN/t01/radiation_rrtmg.o and b/RUN/t01/radiation_rrtmg.o differ
+diff --git a/RUN/t01/radoutld.mod b/RUN/t01/radoutld.mod
+index 2b40a1a..9a41db1 100644
+Binary files a/RUN/t01/radoutld.mod and b/RUN/t01/radoutld.mod differ
+diff --git a/RUN/t01/rcalc_module.mod b/RUN/t01/rcalc_module.mod
+index d588eeb..ecb33db 100644
+Binary files a/RUN/t01/rcalc_module.mod and b/RUN/t01/rcalc_module.mod differ
+diff --git a/RUN/t01/rcalc_module.o b/RUN/t01/rcalc_module.o
+index ca63c10..abee4e7 100644
+Binary files a/RUN/t01/rcalc_module.o and b/RUN/t01/rcalc_module.o differ
+diff --git a/RUN/t01/rrlw_cld.mod b/RUN/t01/rrlw_cld.mod
+index b44b816..1141ba8 100644
+Binary files a/RUN/t01/rrlw_cld.mod and b/RUN/t01/rrlw_cld.mod differ
+diff --git a/RUN/t01/rrlw_cld.o b/RUN/t01/rrlw_cld.o
+index e38fc42..339e690 100644
+Binary files a/RUN/t01/rrlw_cld.o and b/RUN/t01/rrlw_cld.o differ
+diff --git a/RUN/t01/rrlw_con.mod b/RUN/t01/rrlw_con.mod
+index 5a8239e..6a58869 100644
+Binary files a/RUN/t01/rrlw_con.mod and b/RUN/t01/rrlw_con.mod differ
+diff --git a/RUN/t01/rrlw_con.o b/RUN/t01/rrlw_con.o
+index 45f4463..2dd219d 100644
+Binary files a/RUN/t01/rrlw_con.o and b/RUN/t01/rrlw_con.o differ
+diff --git a/RUN/t01/rrlw_kg01.mod b/RUN/t01/rrlw_kg01.mod
+index cb012cc..055211a 100644
+Binary files a/RUN/t01/rrlw_kg01.mod and b/RUN/t01/rrlw_kg01.mod differ
+diff --git a/RUN/t01/rrlw_kg01.o b/RUN/t01/rrlw_kg01.o
+index 6b97ad7..062a7e3 100644
+Binary files a/RUN/t01/rrlw_kg01.o and b/RUN/t01/rrlw_kg01.o differ
+diff --git a/RUN/t01/rrlw_kg02.mod b/RUN/t01/rrlw_kg02.mod
+index b2eba4f..7c4604a 100644
+Binary files a/RUN/t01/rrlw_kg02.mod and b/RUN/t01/rrlw_kg02.mod differ
+diff --git a/RUN/t01/rrlw_kg02.o b/RUN/t01/rrlw_kg02.o
+index 569315c..d0c54b9 100644
+Binary files a/RUN/t01/rrlw_kg02.o and b/RUN/t01/rrlw_kg02.o differ
+diff --git a/RUN/t01/rrlw_kg03.mod b/RUN/t01/rrlw_kg03.mod
+index 49768b7..ee282ed 100644
+Binary files a/RUN/t01/rrlw_kg03.mod and b/RUN/t01/rrlw_kg03.mod differ
+diff --git a/RUN/t01/rrlw_kg03.o b/RUN/t01/rrlw_kg03.o
+index 45d6c1f..cc95efe 100644
+Binary files a/RUN/t01/rrlw_kg03.o and b/RUN/t01/rrlw_kg03.o differ
+diff --git a/RUN/t01/rrlw_kg04.mod b/RUN/t01/rrlw_kg04.mod
+index 19bce1b..b589bc0 100644
+Binary files a/RUN/t01/rrlw_kg04.mod and b/RUN/t01/rrlw_kg04.mod differ
+diff --git a/RUN/t01/rrlw_kg04.o b/RUN/t01/rrlw_kg04.o
+index 657f9c1..712b2d4 100644
+Binary files a/RUN/t01/rrlw_kg04.o and b/RUN/t01/rrlw_kg04.o differ
+diff --git a/RUN/t01/rrlw_kg05.mod b/RUN/t01/rrlw_kg05.mod
+index 426e188..d61ed55 100644
+Binary files a/RUN/t01/rrlw_kg05.mod and b/RUN/t01/rrlw_kg05.mod differ
+diff --git a/RUN/t01/rrlw_kg05.o b/RUN/t01/rrlw_kg05.o
+index 7762001..24d49d8 100644
+Binary files a/RUN/t01/rrlw_kg05.o and b/RUN/t01/rrlw_kg05.o differ
+diff --git a/RUN/t01/rrlw_kg06.mod b/RUN/t01/rrlw_kg06.mod
+index 8658b46..d5e86a0 100644
+Binary files a/RUN/t01/rrlw_kg06.mod and b/RUN/t01/rrlw_kg06.mod differ
+diff --git a/RUN/t01/rrlw_kg06.o b/RUN/t01/rrlw_kg06.o
+index 4da7ad9..f88a44c 100644
+Binary files a/RUN/t01/rrlw_kg06.o and b/RUN/t01/rrlw_kg06.o differ
+diff --git a/RUN/t01/rrlw_kg07.mod b/RUN/t01/rrlw_kg07.mod
+index cc75c74..09543bc 100644
+Binary files a/RUN/t01/rrlw_kg07.mod and b/RUN/t01/rrlw_kg07.mod differ
+diff --git a/RUN/t01/rrlw_kg07.o b/RUN/t01/rrlw_kg07.o
+index d8ab5e4..3ddf415 100644
+Binary files a/RUN/t01/rrlw_kg07.o and b/RUN/t01/rrlw_kg07.o differ
+diff --git a/RUN/t01/rrlw_kg08.mod b/RUN/t01/rrlw_kg08.mod
+index 16e1d1e..c7b7239 100644
+Binary files a/RUN/t01/rrlw_kg08.mod and b/RUN/t01/rrlw_kg08.mod differ
+diff --git a/RUN/t01/rrlw_kg08.o b/RUN/t01/rrlw_kg08.o
+index 950efc1..d034278 100644
+Binary files a/RUN/t01/rrlw_kg08.o and b/RUN/t01/rrlw_kg08.o differ
+diff --git a/RUN/t01/rrlw_kg09.mod b/RUN/t01/rrlw_kg09.mod
+index 80df2c1..05e9b2b 100644
+Binary files a/RUN/t01/rrlw_kg09.mod and b/RUN/t01/rrlw_kg09.mod differ
+diff --git a/RUN/t01/rrlw_kg09.o b/RUN/t01/rrlw_kg09.o
+index 3cda05b..adc23b3 100644
+Binary files a/RUN/t01/rrlw_kg09.o and b/RUN/t01/rrlw_kg09.o differ
+diff --git a/RUN/t01/rrlw_kg10.mod b/RUN/t01/rrlw_kg10.mod
+index f4570ac..ed371da 100644
+Binary files a/RUN/t01/rrlw_kg10.mod and b/RUN/t01/rrlw_kg10.mod differ
+diff --git a/RUN/t01/rrlw_kg10.o b/RUN/t01/rrlw_kg10.o
+index 23bfd8d..658fe86 100644
+Binary files a/RUN/t01/rrlw_kg10.o and b/RUN/t01/rrlw_kg10.o differ
+diff --git a/RUN/t01/rrlw_kg11.mod b/RUN/t01/rrlw_kg11.mod
+index 7b450db..6a049c9 100644
+Binary files a/RUN/t01/rrlw_kg11.mod and b/RUN/t01/rrlw_kg11.mod differ
+diff --git a/RUN/t01/rrlw_kg11.o b/RUN/t01/rrlw_kg11.o
+index f12f2ee..2e089e2 100644
+Binary files a/RUN/t01/rrlw_kg11.o and b/RUN/t01/rrlw_kg11.o differ
+diff --git a/RUN/t01/rrlw_kg12.mod b/RUN/t01/rrlw_kg12.mod
+index de50b52..b104afd 100644
+Binary files a/RUN/t01/rrlw_kg12.mod and b/RUN/t01/rrlw_kg12.mod differ
+diff --git a/RUN/t01/rrlw_kg12.o b/RUN/t01/rrlw_kg12.o
+index ad95cf8..787a199 100644
+Binary files a/RUN/t01/rrlw_kg12.o and b/RUN/t01/rrlw_kg12.o differ
+diff --git a/RUN/t01/rrlw_kg13.mod b/RUN/t01/rrlw_kg13.mod
+index 0061207..c74617b 100644
+Binary files a/RUN/t01/rrlw_kg13.mod and b/RUN/t01/rrlw_kg13.mod differ
+diff --git a/RUN/t01/rrlw_kg13.o b/RUN/t01/rrlw_kg13.o
+index 09b70be..01d9a7d 100644
+Binary files a/RUN/t01/rrlw_kg13.o and b/RUN/t01/rrlw_kg13.o differ
+diff --git a/RUN/t01/rrlw_kg14.mod b/RUN/t01/rrlw_kg14.mod
+index ee0c3de..7a7cb43 100644
+Binary files a/RUN/t01/rrlw_kg14.mod and b/RUN/t01/rrlw_kg14.mod differ
+diff --git a/RUN/t01/rrlw_kg14.o b/RUN/t01/rrlw_kg14.o
+index 7489e1a..0e19c22 100644
+Binary files a/RUN/t01/rrlw_kg14.o and b/RUN/t01/rrlw_kg14.o differ
+diff --git a/RUN/t01/rrlw_kg15.mod b/RUN/t01/rrlw_kg15.mod
+index e12f884..4a20690 100644
+Binary files a/RUN/t01/rrlw_kg15.mod and b/RUN/t01/rrlw_kg15.mod differ
+diff --git a/RUN/t01/rrlw_kg15.o b/RUN/t01/rrlw_kg15.o
+index 2c027b9..4c808f3 100644
+Binary files a/RUN/t01/rrlw_kg15.o and b/RUN/t01/rrlw_kg15.o differ
+diff --git a/RUN/t01/rrlw_kg16.mod b/RUN/t01/rrlw_kg16.mod
+index 1a5260f..2cb4c69 100644
+Binary files a/RUN/t01/rrlw_kg16.mod and b/RUN/t01/rrlw_kg16.mod differ
+diff --git a/RUN/t01/rrlw_kg16.o b/RUN/t01/rrlw_kg16.o
+index 7d8a0f8..9aac670 100644
+Binary files a/RUN/t01/rrlw_kg16.o and b/RUN/t01/rrlw_kg16.o differ
+diff --git a/RUN/t01/rrlw_ncpar.mod b/RUN/t01/rrlw_ncpar.mod
+index ac8f4c7..a0b2a1b 100644
+Binary files a/RUN/t01/rrlw_ncpar.mod and b/RUN/t01/rrlw_ncpar.mod differ
+diff --git a/RUN/t01/rrlw_ncpar.o b/RUN/t01/rrlw_ncpar.o
+index 8f49181..92664f9 100644
+Binary files a/RUN/t01/rrlw_ncpar.o and b/RUN/t01/rrlw_ncpar.o differ
+diff --git a/RUN/t01/rrlw_ref.mod b/RUN/t01/rrlw_ref.mod
+index 29caa58..a500c58 100644
+Binary files a/RUN/t01/rrlw_ref.mod and b/RUN/t01/rrlw_ref.mod differ
+diff --git a/RUN/t01/rrlw_ref.o b/RUN/t01/rrlw_ref.o
+index d1d24f6..d737ffc 100644
+Binary files a/RUN/t01/rrlw_ref.o and b/RUN/t01/rrlw_ref.o differ
+diff --git a/RUN/t01/rrlw_tbl.mod b/RUN/t01/rrlw_tbl.mod
+index c52a49d..8c7fac7 100644
+Binary files a/RUN/t01/rrlw_tbl.mod and b/RUN/t01/rrlw_tbl.mod differ
+diff --git a/RUN/t01/rrlw_tbl.o b/RUN/t01/rrlw_tbl.o
+index b0e3b7f..5f6cce4 100644
+Binary files a/RUN/t01/rrlw_tbl.o and b/RUN/t01/rrlw_tbl.o differ
+diff --git a/RUN/t01/rrlw_vsn.mod b/RUN/t01/rrlw_vsn.mod
+index a0bdf80..ccf1a87 100644
+Binary files a/RUN/t01/rrlw_vsn.mod and b/RUN/t01/rrlw_vsn.mod differ
+diff --git a/RUN/t01/rrlw_vsn.o b/RUN/t01/rrlw_vsn.o
+index 9ff190e..6f89f41 100644
+Binary files a/RUN/t01/rrlw_vsn.o and b/RUN/t01/rrlw_vsn.o differ
+diff --git a/RUN/t01/rrlw_wvn.mod b/RUN/t01/rrlw_wvn.mod
+index 1185dac..530bf0c 100644
+Binary files a/RUN/t01/rrlw_wvn.mod and b/RUN/t01/rrlw_wvn.mod differ
+diff --git a/RUN/t01/rrlw_wvn.o b/RUN/t01/rrlw_wvn.o
+index 5ecbeb4..2e4401c 100644
+Binary files a/RUN/t01/rrlw_wvn.o and b/RUN/t01/rrlw_wvn.o differ
+diff --git a/RUN/t01/rrsw_aer.mod b/RUN/t01/rrsw_aer.mod
+index a420f1c..2dc2fab 100644
+Binary files a/RUN/t01/rrsw_aer.mod and b/RUN/t01/rrsw_aer.mod differ
+diff --git a/RUN/t01/rrsw_aer.o b/RUN/t01/rrsw_aer.o
+index 18c84f1..5250592 100644
+Binary files a/RUN/t01/rrsw_aer.o and b/RUN/t01/rrsw_aer.o differ
+diff --git a/RUN/t01/rrsw_cld.mod b/RUN/t01/rrsw_cld.mod
+index 287a00f..8ff9811 100644
+Binary files a/RUN/t01/rrsw_cld.mod and b/RUN/t01/rrsw_cld.mod differ
+diff --git a/RUN/t01/rrsw_cld.o b/RUN/t01/rrsw_cld.o
+index d2ee96d..51f44a6 100644
+Binary files a/RUN/t01/rrsw_cld.o and b/RUN/t01/rrsw_cld.o differ
+diff --git a/RUN/t01/rrsw_con.mod b/RUN/t01/rrsw_con.mod
+index dafbdd8..be2fb7c 100644
+Binary files a/RUN/t01/rrsw_con.mod and b/RUN/t01/rrsw_con.mod differ
+diff --git a/RUN/t01/rrsw_con.o b/RUN/t01/rrsw_con.o
+index a160363..d581ab2 100644
+Binary files a/RUN/t01/rrsw_con.o and b/RUN/t01/rrsw_con.o differ
+diff --git a/RUN/t01/rrsw_kg16.mod b/RUN/t01/rrsw_kg16.mod
+index d458f2e..5c7427f 100644
+Binary files a/RUN/t01/rrsw_kg16.mod and b/RUN/t01/rrsw_kg16.mod differ
+diff --git a/RUN/t01/rrsw_kg16.o b/RUN/t01/rrsw_kg16.o
+index 8354669..3d8f7db 100644
+Binary files a/RUN/t01/rrsw_kg16.o and b/RUN/t01/rrsw_kg16.o differ
+diff --git a/RUN/t01/rrsw_kg17.mod b/RUN/t01/rrsw_kg17.mod
+index 51a3dd6..8ef1c42 100644
+Binary files a/RUN/t01/rrsw_kg17.mod and b/RUN/t01/rrsw_kg17.mod differ
+diff --git a/RUN/t01/rrsw_kg17.o b/RUN/t01/rrsw_kg17.o
+index 5d0099e..fcc6062 100644
+Binary files a/RUN/t01/rrsw_kg17.o and b/RUN/t01/rrsw_kg17.o differ
+diff --git a/RUN/t01/rrsw_kg18.mod b/RUN/t01/rrsw_kg18.mod
+index 1b20ba8..da6277f 100644
+Binary files a/RUN/t01/rrsw_kg18.mod and b/RUN/t01/rrsw_kg18.mod differ
+diff --git a/RUN/t01/rrsw_kg18.o b/RUN/t01/rrsw_kg18.o
+index 3c4410e..06ea67c 100644
+Binary files a/RUN/t01/rrsw_kg18.o and b/RUN/t01/rrsw_kg18.o differ
+diff --git a/RUN/t01/rrsw_kg19.mod b/RUN/t01/rrsw_kg19.mod
+index 6e89183..0361035 100644
+Binary files a/RUN/t01/rrsw_kg19.mod and b/RUN/t01/rrsw_kg19.mod differ
+diff --git a/RUN/t01/rrsw_kg19.o b/RUN/t01/rrsw_kg19.o
+index 515b208..6d5ffb7 100644
+Binary files a/RUN/t01/rrsw_kg19.o and b/RUN/t01/rrsw_kg19.o differ
+diff --git a/RUN/t01/rrsw_kg20.mod b/RUN/t01/rrsw_kg20.mod
+index 271f801..4228c36 100644
+Binary files a/RUN/t01/rrsw_kg20.mod and b/RUN/t01/rrsw_kg20.mod differ
+diff --git a/RUN/t01/rrsw_kg20.o b/RUN/t01/rrsw_kg20.o
+index 3c9ceaa..ab766c8 100644
+Binary files a/RUN/t01/rrsw_kg20.o and b/RUN/t01/rrsw_kg20.o differ
+diff --git a/RUN/t01/rrsw_kg21.mod b/RUN/t01/rrsw_kg21.mod
+index b5d19d2..32d1c49 100644
+Binary files a/RUN/t01/rrsw_kg21.mod and b/RUN/t01/rrsw_kg21.mod differ
+diff --git a/RUN/t01/rrsw_kg21.o b/RUN/t01/rrsw_kg21.o
+index a5af42c..d674b47 100644
+Binary files a/RUN/t01/rrsw_kg21.o and b/RUN/t01/rrsw_kg21.o differ
+diff --git a/RUN/t01/rrsw_kg22.mod b/RUN/t01/rrsw_kg22.mod
+index a7b792a..725aef8 100644
+Binary files a/RUN/t01/rrsw_kg22.mod and b/RUN/t01/rrsw_kg22.mod differ
+diff --git a/RUN/t01/rrsw_kg22.o b/RUN/t01/rrsw_kg22.o
+index de81aa0..d814d45 100644
+Binary files a/RUN/t01/rrsw_kg22.o and b/RUN/t01/rrsw_kg22.o differ
+diff --git a/RUN/t01/rrsw_kg23.mod b/RUN/t01/rrsw_kg23.mod
+index eecb02b..f927337 100644
+Binary files a/RUN/t01/rrsw_kg23.mod and b/RUN/t01/rrsw_kg23.mod differ
+diff --git a/RUN/t01/rrsw_kg23.o b/RUN/t01/rrsw_kg23.o
+index ce2bb50..3ed7208 100644
+Binary files a/RUN/t01/rrsw_kg23.o and b/RUN/t01/rrsw_kg23.o differ
+diff --git a/RUN/t01/rrsw_kg24.mod b/RUN/t01/rrsw_kg24.mod
+index abe1b2c..41a9358 100644
+Binary files a/RUN/t01/rrsw_kg24.mod and b/RUN/t01/rrsw_kg24.mod differ
+diff --git a/RUN/t01/rrsw_kg24.o b/RUN/t01/rrsw_kg24.o
+index 7e14691..3a04f39 100644
+Binary files a/RUN/t01/rrsw_kg24.o and b/RUN/t01/rrsw_kg24.o differ
+diff --git a/RUN/t01/rrsw_kg25.mod b/RUN/t01/rrsw_kg25.mod
+index 613a5e5..937d30f 100644
+Binary files a/RUN/t01/rrsw_kg25.mod and b/RUN/t01/rrsw_kg25.mod differ
+diff --git a/RUN/t01/rrsw_kg25.o b/RUN/t01/rrsw_kg25.o
+index bef5a6d..e0bc2e3 100644
+Binary files a/RUN/t01/rrsw_kg25.o and b/RUN/t01/rrsw_kg25.o differ
+diff --git a/RUN/t01/rrsw_kg26.mod b/RUN/t01/rrsw_kg26.mod
+index f4101e1..e48eaf0 100644
+Binary files a/RUN/t01/rrsw_kg26.mod and b/RUN/t01/rrsw_kg26.mod differ
+diff --git a/RUN/t01/rrsw_kg26.o b/RUN/t01/rrsw_kg26.o
+index dc08205..1603593 100644
+Binary files a/RUN/t01/rrsw_kg26.o and b/RUN/t01/rrsw_kg26.o differ
+diff --git a/RUN/t01/rrsw_kg27.mod b/RUN/t01/rrsw_kg27.mod
+index 1cca7b1..ef69979 100644
+Binary files a/RUN/t01/rrsw_kg27.mod and b/RUN/t01/rrsw_kg27.mod differ
+diff --git a/RUN/t01/rrsw_kg27.o b/RUN/t01/rrsw_kg27.o
+index e5dedb6..3f22852 100644
+Binary files a/RUN/t01/rrsw_kg27.o and b/RUN/t01/rrsw_kg27.o differ
+diff --git a/RUN/t01/rrsw_kg28.mod b/RUN/t01/rrsw_kg28.mod
+index d33c8e3..042984d 100644
+Binary files a/RUN/t01/rrsw_kg28.mod and b/RUN/t01/rrsw_kg28.mod differ
+diff --git a/RUN/t01/rrsw_kg28.o b/RUN/t01/rrsw_kg28.o
+index a6d1c62..e6bb538 100644
+Binary files a/RUN/t01/rrsw_kg28.o and b/RUN/t01/rrsw_kg28.o differ
+diff --git a/RUN/t01/rrsw_kg29.mod b/RUN/t01/rrsw_kg29.mod
+index d61c2ff..f373dab 100644
+Binary files a/RUN/t01/rrsw_kg29.mod and b/RUN/t01/rrsw_kg29.mod differ
+diff --git a/RUN/t01/rrsw_kg29.o b/RUN/t01/rrsw_kg29.o
+index 37ea572..8576b3d 100644
+Binary files a/RUN/t01/rrsw_kg29.o and b/RUN/t01/rrsw_kg29.o differ
+diff --git a/RUN/t01/rrsw_ncpar.mod b/RUN/t01/rrsw_ncpar.mod
+index 57dcd49..05cc124 100644
+Binary files a/RUN/t01/rrsw_ncpar.mod and b/RUN/t01/rrsw_ncpar.mod differ
+diff --git a/RUN/t01/rrsw_ncpar.o b/RUN/t01/rrsw_ncpar.o
+index 8160320..b5681fe 100644
+Binary files a/RUN/t01/rrsw_ncpar.o and b/RUN/t01/rrsw_ncpar.o differ
+diff --git a/RUN/t01/rrsw_ref.mod b/RUN/t01/rrsw_ref.mod
+index 6ecd3f3..a43acdf 100644
+Binary files a/RUN/t01/rrsw_ref.mod and b/RUN/t01/rrsw_ref.mod differ
+diff --git a/RUN/t01/rrsw_ref.o b/RUN/t01/rrsw_ref.o
+index 6d945a6..72a6623 100644
+Binary files a/RUN/t01/rrsw_ref.o and b/RUN/t01/rrsw_ref.o differ
+diff --git a/RUN/t01/rrsw_tbl.mod b/RUN/t01/rrsw_tbl.mod
+index 93237f1..e768d11 100644
+Binary files a/RUN/t01/rrsw_tbl.mod and b/RUN/t01/rrsw_tbl.mod differ
+diff --git a/RUN/t01/rrsw_tbl.o b/RUN/t01/rrsw_tbl.o
+index b952f14..5fcd6e4 100644
+Binary files a/RUN/t01/rrsw_tbl.o and b/RUN/t01/rrsw_tbl.o differ
+diff --git a/RUN/t01/rrsw_vsn.mod b/RUN/t01/rrsw_vsn.mod
+index e2cd349..cdc950d 100644
+Binary files a/RUN/t01/rrsw_vsn.mod and b/RUN/t01/rrsw_vsn.mod differ
+diff --git a/RUN/t01/rrsw_vsn.o b/RUN/t01/rrsw_vsn.o
+index 40f4f69..c1e6d03 100644
+Binary files a/RUN/t01/rrsw_vsn.o and b/RUN/t01/rrsw_vsn.o differ
+diff --git a/RUN/t01/rrsw_wvn.mod b/RUN/t01/rrsw_wvn.mod
+index 5e7c23b..3335d1c 100644
+Binary files a/RUN/t01/rrsw_wvn.mod and b/RUN/t01/rrsw_wvn.mod differ
+diff --git a/RUN/t01/rrsw_wvn.o b/RUN/t01/rrsw_wvn.o
+index 32e349b..6eb2fb6 100644
+Binary files a/RUN/t01/rrsw_wvn.o and b/RUN/t01/rrsw_wvn.o differ
+diff --git a/RUN/t01/rrtm_grid.mod b/RUN/t01/rrtm_grid.mod
+index f97c3a1..b3e9911 100644
+Binary files a/RUN/t01/rrtm_grid.mod and b/RUN/t01/rrtm_grid.mod differ
+diff --git a/RUN/t01/rrtm_grid.o b/RUN/t01/rrtm_grid.o
+index a5bc77b..633245d 100644
+Binary files a/RUN/t01/rrtm_grid.o and b/RUN/t01/rrtm_grid.o differ
+diff --git a/RUN/t01/rrtm_params.mod b/RUN/t01/rrtm_params.mod
+index 1ceac7a..d7a28e7 100644
+Binary files a/RUN/t01/rrtm_params.mod and b/RUN/t01/rrtm_params.mod differ
+diff --git a/RUN/t01/rrtm_params.o b/RUN/t01/rrtm_params.o
+index df83723..bf2f4d2 100644
+Binary files a/RUN/t01/rrtm_params.o and b/RUN/t01/rrtm_params.o differ
+diff --git a/RUN/t01/rrtm_vars.mod b/RUN/t01/rrtm_vars.mod
+index 19174a0..11f51b4 100644
+Binary files a/RUN/t01/rrtm_vars.mod and b/RUN/t01/rrtm_vars.mod differ
+diff --git a/RUN/t01/rrtm_vars.o b/RUN/t01/rrtm_vars.o
+index c408195..adb0d6f 100644
+Binary files a/RUN/t01/rrtm_vars.o and b/RUN/t01/rrtm_vars.o differ
+diff --git a/RUN/t01/rrtmg_lw_cldprmc.mod b/RUN/t01/rrtmg_lw_cldprmc.mod
+index 1824cd8..0d252aa 100644
+Binary files a/RUN/t01/rrtmg_lw_cldprmc.mod and b/RUN/t01/rrtmg_lw_cldprmc.mod differ
+diff --git a/RUN/t01/rrtmg_lw_cldprmc.o b/RUN/t01/rrtmg_lw_cldprmc.o
+index fb6fcc7..0953265 100644
+Binary files a/RUN/t01/rrtmg_lw_cldprmc.o and b/RUN/t01/rrtmg_lw_cldprmc.o differ
+diff --git a/RUN/t01/rrtmg_lw_cldprop.mod b/RUN/t01/rrtmg_lw_cldprop.mod
+index 9665589..d6fe97e 100644
+Binary files a/RUN/t01/rrtmg_lw_cldprop.mod and b/RUN/t01/rrtmg_lw_cldprop.mod differ
+diff --git a/RUN/t01/rrtmg_lw_cldprop.o b/RUN/t01/rrtmg_lw_cldprop.o
+index 7c87c9c..8fab7f3 100644
+Binary files a/RUN/t01/rrtmg_lw_cldprop.o and b/RUN/t01/rrtmg_lw_cldprop.o differ
+diff --git a/RUN/t01/rrtmg_lw_init.mod b/RUN/t01/rrtmg_lw_init.mod
+index 6f2311e..95b99ee 100644
+Binary files a/RUN/t01/rrtmg_lw_init.mod and b/RUN/t01/rrtmg_lw_init.mod differ
+diff --git a/RUN/t01/rrtmg_lw_init.o b/RUN/t01/rrtmg_lw_init.o
+index 08f9e91..90fef3b 100644
+Binary files a/RUN/t01/rrtmg_lw_init.o and b/RUN/t01/rrtmg_lw_init.o differ
+diff --git a/RUN/t01/rrtmg_lw_rad.mod b/RUN/t01/rrtmg_lw_rad.mod
+index 896662c..886a755 100644
+Binary files a/RUN/t01/rrtmg_lw_rad.mod and b/RUN/t01/rrtmg_lw_rad.mod differ
+diff --git a/RUN/t01/rrtmg_lw_rad.o b/RUN/t01/rrtmg_lw_rad.o
+index e0fb6b7..93f68c2 100644
+Binary files a/RUN/t01/rrtmg_lw_rad.o and b/RUN/t01/rrtmg_lw_rad.o differ
+diff --git a/RUN/t01/rrtmg_lw_read_nc.o b/RUN/t01/rrtmg_lw_read_nc.o
+index c549c6c..65f6ea3 100644
+Binary files a/RUN/t01/rrtmg_lw_read_nc.o and b/RUN/t01/rrtmg_lw_read_nc.o differ
+diff --git a/RUN/t01/rrtmg_lw_rtrn.mod b/RUN/t01/rrtmg_lw_rtrn.mod
+index 275b499..702dd41 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrn.mod and b/RUN/t01/rrtmg_lw_rtrn.mod differ
+diff --git a/RUN/t01/rrtmg_lw_rtrn.o b/RUN/t01/rrtmg_lw_rtrn.o
+index 6da6946..867b49f 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrn.o and b/RUN/t01/rrtmg_lw_rtrn.o differ
+diff --git a/RUN/t01/rrtmg_lw_rtrnmc.mod b/RUN/t01/rrtmg_lw_rtrnmc.mod
+index fd22c0c..6964497 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrnmc.mod and b/RUN/t01/rrtmg_lw_rtrnmc.mod differ
+diff --git a/RUN/t01/rrtmg_lw_rtrnmc.o b/RUN/t01/rrtmg_lw_rtrnmc.o
+index 893501c..b89c0cd 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrnmc.o and b/RUN/t01/rrtmg_lw_rtrnmc.o differ
+diff --git a/RUN/t01/rrtmg_lw_rtrnmr.mod b/RUN/t01/rrtmg_lw_rtrnmr.mod
+index 160204a..b7619de 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrnmr.mod and b/RUN/t01/rrtmg_lw_rtrnmr.mod differ
+diff --git a/RUN/t01/rrtmg_lw_rtrnmr.o b/RUN/t01/rrtmg_lw_rtrnmr.o
+index cea7ed2..28ece76 100644
+Binary files a/RUN/t01/rrtmg_lw_rtrnmr.o and b/RUN/t01/rrtmg_lw_rtrnmr.o differ
+diff --git a/RUN/t01/rrtmg_lw_setcoef.mod b/RUN/t01/rrtmg_lw_setcoef.mod
+index 55c17e6..1e3e1ea 100644
+Binary files a/RUN/t01/rrtmg_lw_setcoef.mod and b/RUN/t01/rrtmg_lw_setcoef.mod differ
+diff --git a/RUN/t01/rrtmg_lw_setcoef.o b/RUN/t01/rrtmg_lw_setcoef.o
+index 1513119..66b6c23 100644
+Binary files a/RUN/t01/rrtmg_lw_setcoef.o and b/RUN/t01/rrtmg_lw_setcoef.o differ
+diff --git a/RUN/t01/rrtmg_lw_taumol.mod b/RUN/t01/rrtmg_lw_taumol.mod
+index 770d4c7..22b82e7 100644
+Binary files a/RUN/t01/rrtmg_lw_taumol.mod and b/RUN/t01/rrtmg_lw_taumol.mod differ
+diff --git a/RUN/t01/rrtmg_lw_taumol.o b/RUN/t01/rrtmg_lw_taumol.o
+index 3e085ee..226e254 100644
+Binary files a/RUN/t01/rrtmg_lw_taumol.o and b/RUN/t01/rrtmg_lw_taumol.o differ
+diff --git a/RUN/t01/rrtmg_sw_cldprmc.mod b/RUN/t01/rrtmg_sw_cldprmc.mod
+index ff723fc..b4d1e5e 100644
+Binary files a/RUN/t01/rrtmg_sw_cldprmc.mod and b/RUN/t01/rrtmg_sw_cldprmc.mod differ
+diff --git a/RUN/t01/rrtmg_sw_cldprmc.o b/RUN/t01/rrtmg_sw_cldprmc.o
+index 319a94e..c636c91 100644
+Binary files a/RUN/t01/rrtmg_sw_cldprmc.o and b/RUN/t01/rrtmg_sw_cldprmc.o differ
+diff --git a/RUN/t01/rrtmg_sw_cldprop.mod b/RUN/t01/rrtmg_sw_cldprop.mod
+index 86092e4..472739e 100644
+Binary files a/RUN/t01/rrtmg_sw_cldprop.mod and b/RUN/t01/rrtmg_sw_cldprop.mod differ
+diff --git a/RUN/t01/rrtmg_sw_cldprop.o b/RUN/t01/rrtmg_sw_cldprop.o
+index e06d0a4..55c3316 100644
+Binary files a/RUN/t01/rrtmg_sw_cldprop.o and b/RUN/t01/rrtmg_sw_cldprop.o differ
+diff --git a/RUN/t01/rrtmg_sw_init.mod b/RUN/t01/rrtmg_sw_init.mod
+index f4e7c88..353dbc8 100644
+Binary files a/RUN/t01/rrtmg_sw_init.mod and b/RUN/t01/rrtmg_sw_init.mod differ
+diff --git a/RUN/t01/rrtmg_sw_init.o b/RUN/t01/rrtmg_sw_init.o
+index 132b366..6151429 100644
+Binary files a/RUN/t01/rrtmg_sw_init.o and b/RUN/t01/rrtmg_sw_init.o differ
+diff --git a/RUN/t01/rrtmg_sw_rad.mod b/RUN/t01/rrtmg_sw_rad.mod
+index 042720a..99115cd 100644
+Binary files a/RUN/t01/rrtmg_sw_rad.mod and b/RUN/t01/rrtmg_sw_rad.mod differ
+diff --git a/RUN/t01/rrtmg_sw_rad.o b/RUN/t01/rrtmg_sw_rad.o
+index 3a0353c..c016f39 100644
+Binary files a/RUN/t01/rrtmg_sw_rad.o and b/RUN/t01/rrtmg_sw_rad.o differ
+diff --git a/RUN/t01/rrtmg_sw_read_nc.o b/RUN/t01/rrtmg_sw_read_nc.o
+index c3a779c..c3bce24 100644
+Binary files a/RUN/t01/rrtmg_sw_read_nc.o and b/RUN/t01/rrtmg_sw_read_nc.o differ
+diff --git a/RUN/t01/rrtmg_sw_reftra.mod b/RUN/t01/rrtmg_sw_reftra.mod
+index ba42471..9832c0e 100644
+Binary files a/RUN/t01/rrtmg_sw_reftra.mod and b/RUN/t01/rrtmg_sw_reftra.mod differ
+diff --git a/RUN/t01/rrtmg_sw_reftra.o b/RUN/t01/rrtmg_sw_reftra.o
+index 490eaba..d47bc34 100644
+Binary files a/RUN/t01/rrtmg_sw_reftra.o and b/RUN/t01/rrtmg_sw_reftra.o differ
+diff --git a/RUN/t01/rrtmg_sw_setcoef.mod b/RUN/t01/rrtmg_sw_setcoef.mod
+index 0b7fea2..9af6b0e 100644
+Binary files a/RUN/t01/rrtmg_sw_setcoef.mod and b/RUN/t01/rrtmg_sw_setcoef.mod differ
+diff --git a/RUN/t01/rrtmg_sw_setcoef.o b/RUN/t01/rrtmg_sw_setcoef.o
+index 4dbe013..097c765 100644
+Binary files a/RUN/t01/rrtmg_sw_setcoef.o and b/RUN/t01/rrtmg_sw_setcoef.o differ
+diff --git a/RUN/t01/rrtmg_sw_spcvmc.mod b/RUN/t01/rrtmg_sw_spcvmc.mod
+index acab708..b68d1d6 100644
+Binary files a/RUN/t01/rrtmg_sw_spcvmc.mod and b/RUN/t01/rrtmg_sw_spcvmc.mod differ
+diff --git a/RUN/t01/rrtmg_sw_spcvmc.o b/RUN/t01/rrtmg_sw_spcvmc.o
+index ef12ff2..3ca63cf 100644
+Binary files a/RUN/t01/rrtmg_sw_spcvmc.o and b/RUN/t01/rrtmg_sw_spcvmc.o differ
+diff --git a/RUN/t01/rrtmg_sw_spcvrt.mod b/RUN/t01/rrtmg_sw_spcvrt.mod
+index 168d541..1ec33c1 100644
+Binary files a/RUN/t01/rrtmg_sw_spcvrt.mod and b/RUN/t01/rrtmg_sw_spcvrt.mod differ
+diff --git a/RUN/t01/rrtmg_sw_spcvrt.o b/RUN/t01/rrtmg_sw_spcvrt.o
+index 04a055d..065ab7a 100644
+Binary files a/RUN/t01/rrtmg_sw_spcvrt.o and b/RUN/t01/rrtmg_sw_spcvrt.o differ
+diff --git a/RUN/t01/rrtmg_sw_taumol.mod b/RUN/t01/rrtmg_sw_taumol.mod
+index 45ae59b..ca0c490 100644
+Binary files a/RUN/t01/rrtmg_sw_taumol.mod and b/RUN/t01/rrtmg_sw_taumol.mod differ
+diff --git a/RUN/t01/rrtmg_sw_taumol.o b/RUN/t01/rrtmg_sw_taumol.o
+index 54454b7..5af89cf 100644
+Binary files a/RUN/t01/rrtmg_sw_taumol.o and b/RUN/t01/rrtmg_sw_taumol.o differ
+diff --git a/RUN/t01/rrtmg_sw_vrtqdr.mod b/RUN/t01/rrtmg_sw_vrtqdr.mod
+index e25dbd9..47c2b29 100644
+Binary files a/RUN/t01/rrtmg_sw_vrtqdr.mod and b/RUN/t01/rrtmg_sw_vrtqdr.mod differ
+diff --git a/RUN/t01/rrtmg_sw_vrtqdr.o b/RUN/t01/rrtmg_sw_vrtqdr.o
+index cea01a3..3498a65 100644
+Binary files a/RUN/t01/rrtmg_sw_vrtqdr.o and b/RUN/t01/rrtmg_sw_vrtqdr.o differ
+diff --git a/RUN/t01/shr_kind_mod.mod b/RUN/t01/shr_kind_mod.mod
+index 91832c5..d0f4a33 100644
+Binary files a/RUN/t01/shr_kind_mod.mod and b/RUN/t01/shr_kind_mod.mod differ
+diff --git a/RUN/t01/shr_kind_mod.o b/RUN/t01/shr_kind_mod.o
+index 936945a..b2344fa 100644
+Binary files a/RUN/t01/shr_kind_mod.o and b/RUN/t01/shr_kind_mod.o differ
+diff --git a/RUN/t01/shr_orb_mod.mod b/RUN/t01/shr_orb_mod.mod
+index 94b1f88..e60084c 100644
+Binary files a/RUN/t01/shr_orb_mod.mod and b/RUN/t01/shr_orb_mod.mod differ
+diff --git a/RUN/t01/shr_orb_mod.o b/RUN/t01/shr_orb_mod.o
+index a22af8e..4f99d57 100644
+Binary files a/RUN/t01/shr_orb_mod.o and b/RUN/t01/shr_orb_mod.o differ
+diff --git a/RUN/t01/time_interp_module.mod b/RUN/t01/time_interp_module.mod
+index 3018f2c..2ee80de 100644
+Binary files a/RUN/t01/time_interp_module.mod and b/RUN/t01/time_interp_module.mod differ
+diff --git a/RUN/t01/time_interp_module.o b/RUN/t01/time_interp_module.o
+index 225be99..7b95b13 100644
+Binary files a/RUN/t01/time_interp_module.o and b/RUN/t01/time_interp_module.o differ
+diff --git a/RUN/t01/time_manager_module.mod b/RUN/t01/time_manager_module.mod
+index 6b184d4..f3c325b 100644
+Binary files a/RUN/t01/time_manager_module.mod and b/RUN/t01/time_manager_module.mod differ
+diff --git a/RUN/t01/time_manager_module.o b/RUN/t01/time_manager_module.o
+index e514471..762404f 100644
+Binary files a/RUN/t01/time_manager_module.o and b/RUN/t01/time_manager_module.o differ
+diff --git a/RUN/t01/timeinfo.mod b/RUN/t01/timeinfo.mod
+index ab5aabc..a0d10f2 100644
+Binary files a/RUN/t01/timeinfo.mod and b/RUN/t01/timeinfo.mod differ
+diff --git a/RUN/t01/timeinterp.mod b/RUN/t01/timeinterp.mod
+index 0523877..765a6d0 100644
+Binary files a/RUN/t01/timeinterp.mod and b/RUN/t01/timeinterp.mod differ
+diff --git a/RUN/t01/timer.mod b/RUN/t01/timer.mod
+index c5309dc..a60396c 100644
+Binary files a/RUN/t01/timer.mod and b/RUN/t01/timer.mod differ
+diff --git a/RUN/t01/timer.o b/RUN/t01/timer.o
+index 94dcf8d..b7ae669 100644
+Binary files a/RUN/t01/timer.o and b/RUN/t01/timer.o differ
+diff --git a/RUN/t01/trace_gases.mod b/RUN/t01/trace_gases.mod
+index 1d6cd9e..d1f2451 100644
+Binary files a/RUN/t01/trace_gases.mod and b/RUN/t01/trace_gases.mod differ
+diff --git a/RUN/t01/trace_gases.o b/RUN/t01/trace_gases.o
+index 8a6097d..881d94f 100644
+Binary files a/RUN/t01/trace_gases.o and b/RUN/t01/trace_gases.o differ
+diff --git a/RUN/t01/turb_1d_module.mod b/RUN/t01/turb_1d_module.mod
+index 2348d8a..2f8456f 100644
+Binary files a/RUN/t01/turb_1d_module.mod and b/RUN/t01/turb_1d_module.mod differ
+diff --git a/RUN/t01/turb_1d_module.o b/RUN/t01/turb_1d_module.o
+index 9c30365..72ca186 100644
+Binary files a/RUN/t01/turb_1d_module.o and b/RUN/t01/turb_1d_module.o differ
+diff --git a/RUN/t01/turb_3d_module.mod b/RUN/t01/turb_3d_module.mod
+index 4616871..7258878 100644
+Binary files a/RUN/t01/turb_3d_module.mod and b/RUN/t01/turb_3d_module.mod differ
+diff --git a/RUN/t01/turb_3d_module.o b/RUN/t01/turb_3d_module.o
+index 7c0b15c..57b316b 100644
+Binary files a/RUN/t01/turb_3d_module.o and b/RUN/t01/turb_3d_module.o differ
+diff --git a/RUN/t01/turb_surflx_variables.mod b/RUN/t01/turb_surflx_variables.mod
+index 43f988c..aa1f1a4 100644
+Binary files a/RUN/t01/turb_surflx_variables.mod and b/RUN/t01/turb_surflx_variables.mod differ
+diff --git a/RUN/t01/update_thermo_module.mod b/RUN/t01/update_thermo_module.mod
+index 09e4727..4cbd7e0 100644
+Binary files a/RUN/t01/update_thermo_module.mod and b/RUN/t01/update_thermo_module.mod differ
+diff --git a/RUN/t01/update_thermo_module.o b/RUN/t01/update_thermo_module.o
+index 8c045ed..3e5f6a5 100644
+Binary files a/RUN/t01/update_thermo_module.o and b/RUN/t01/update_thermo_module.o differ
+diff --git a/RUN/t01/update_tracer_module.mod b/RUN/t01/update_tracer_module.mod
+index b0d109b..a2878f7 100644
+Binary files a/RUN/t01/update_tracer_module.mod and b/RUN/t01/update_tracer_module.mod differ
+diff --git a/RUN/t01/update_tracer_module.o b/RUN/t01/update_tracer_module.o
+index 1aa4a4d..aa96b7f 100644
+Binary files a/RUN/t01/update_tracer_module.o and b/RUN/t01/update_tracer_module.o differ
+diff --git a/RUN/t01/utils.mod b/RUN/t01/utils.mod
+index 3cf78b1..86c93ef 100644
+Binary files a/RUN/t01/utils.mod and b/RUN/t01/utils.mod differ
+diff --git a/RUN/t01/utils.o b/RUN/t01/utils.o
+index 7f63a74..2247536 100644
+Binary files a/RUN/t01/utils.o and b/RUN/t01/utils.o differ
+diff --git a/RUN/t01/uvtop.mod b/RUN/t01/uvtop.mod
+index 896dd5c..76cd9d6 100644
+Binary files a/RUN/t01/uvtop.mod and b/RUN/t01/uvtop.mod differ
+diff --git a/RUN/t01/uvtop.o b/RUN/t01/uvtop.o
+index 9d774c6..47a4838 100644
+Binary files a/RUN/t01/uvtop.o and b/RUN/t01/uvtop.o differ
+diff --git a/RUN/t01/vertical_adaptive.mod b/RUN/t01/vertical_adaptive.mod
+index 2c8cf5b..07434e4 100644
+Binary files a/RUN/t01/vertical_adaptive.mod and b/RUN/t01/vertical_adaptive.mod differ
+diff --git a/RUN/t01/vertical_adaptive.o b/RUN/t01/vertical_adaptive.o
+index 5cf7b02..df1e271 100644
+Binary files a/RUN/t01/vertical_adaptive.o and b/RUN/t01/vertical_adaptive.o differ
+diff --git a/RUN/t01/vort_3d_module.mod b/RUN/t01/vort_3d_module.mod
+index 87841e7..f48a6fe 100644
+Binary files a/RUN/t01/vort_3d_module.mod and b/RUN/t01/vort_3d_module.mod differ
+diff --git a/RUN/t01/vort_3d_module.o b/RUN/t01/vort_3d_module.o
+index 4aeeeda..4df10d9 100644
+Binary files a/RUN/t01/vort_3d_module.o and b/RUN/t01/vort_3d_module.o differ
+diff --git a/RUN/t01/vvm.run b/RUN/t01/vvm.run
+index 8938681..a15e5bd 100755
+--- a/RUN/t01/vvm.run
++++ b/RUN/t01/vvm.run
+@@ -13,7 +13,7 @@
+ # Example: make INTEL=true DEBUG=true
+ 
+ set echo  # echoes the commands
+-set expname = walter_small
++set expname = hi_reso_5K
+ set subdir = ../../DATA/${expname}
+ set datadir = ../../RUNDATA
+ set codedir = CODE
+diff --git a/RUN/t01/vvm.setup b/RUN/t01/vvm.setup
+index aaf3ac7..5da64ad 100755
+--- a/RUN/t01/vvm.setup
++++ b/RUN/t01/vvm.setup
+@@ -5,7 +5,7 @@
+ #--------------------------------------------------------------------- 
+ 
+ set echo  # echoes the commands
+-set expname = walter_small
++set expname = hi_reso_5K
+ 
+ # hardscrabble configuration
+ set subdir = '../..'
+@@ -56,7 +56,7 @@ sed -e '1,$s/zonal_dimension/128/' \
+     -e '1,$s/merid_dimension/128/' \
+     -e '1,$s/zonal_decomposition/2/' \
+     -e '1,$s/merid_decomposition/2/' \
+-    -e '1,$s/vert_dimension/45/' \
++    -e '1,$s/vert_dimension/80/' \
+     -e '1,$s/tracer_dimension/0/' \
+   ../../CODE/cdecks/PARMSLD.F90 > PARMSLD.f90
+ 
+@@ -67,9 +67,9 @@ sed -e '1,$s/zonal_dimension/128/' \
+ 
+ # input data
+ cat > INPUT << 'END6'
+- &INPUT1 NEWRUN=T, ITTADD=2401 /
++ &INPUT1 NEWRUN=T, ITTADD=721 /
+  &INPUT2 RLAT=0.,RLON=120./
+- &INPUT3 DX=200.,DYNEW=200.,DZ=500.,DZ1=100.,DT=5,NOTURB=F,NOSFX=T,NSFLUX=12,ALADV=1.,UVTAU=7200. /
++ &INPUT3 DX=200.,DYNEW=200.,DZ=200.,DZ1=200.,DT=5,NOTURB=F,NOSFX=T,NSFLUX=12,ALADV=1.,UVTAU=7200. /
+  &INPUT4 NXS=1,NXSAVG=12,NWR11=1,NFLPRT=1,NRESTART=12 /
+  &INPUT5 IX=3182073,ITINIT=10,ITSTOP=30,SCALE=6.,Q1Q2=T,DTRAD=120.,petsc_cr = 0/
+ 'END6'
+diff --git a/RUN/t01/wind_module.mod b/RUN/t01/wind_module.mod
+index 47ef2b3..2700dcf 100644
+Binary files a/RUN/t01/wind_module.mod and b/RUN/t01/wind_module.mod differ
+diff --git a/RUN/t01/wind_module.o b/RUN/t01/wind_module.o
+index a0f8e59..3910500 100644
+Binary files a/RUN/t01/wind_module.o and b/RUN/t01/wind_module.o differ
+diff --git a/RUN/t01/workcom.mod b/RUN/t01/workcom.mod
+index c014f3c..ae1d87e 100644
+Binary files a/RUN/t01/workcom.mod and b/RUN/t01/workcom.mod differ
+diff --git a/RUN/t01/workcom.o b/RUN/t01/workcom.o
+index a000c7c..05bb0c4 100644
+Binary files a/RUN/t01/workcom.o and b/RUN/t01/workcom.o differ
+diff --git a/RUN/t01/z_coord.mod b/RUN/t01/z_coord.mod
+index db199d9..b3404b7 100644
+Binary files a/RUN/t01/z_coord.mod and b/RUN/t01/z_coord.mod differ
+diff --git a/RUN/t01/z_coord.o b/RUN/t01/z_coord.o
+index a22e53c..63b2ec3 100644
+Binary files a/RUN/t01/z_coord.o and b/RUN/t01/z_coord.o differ
